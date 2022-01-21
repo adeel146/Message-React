@@ -28,7 +28,7 @@ const BasicTable = () => {
   const [data, setdata] = useState([]);
   const [input, setinput] = useState("");
   const [listusers, setlistusers] = useState();
-  const [messagelocation, setmessagelocation] = useState();
+  const [messagelocation, setmessagelocation] = useState("");
 
   const dummy = useRef();
   useEffect(() => {
@@ -72,16 +72,24 @@ const BasicTable = () => {
         setdata(snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })))
     );
   };
+
+  const sortAlphabet=(str)=> {
+    return [...str].sort((a, b) => a.localeCompare(b)).join("");
+  }
+const Ref=sortAlphabet(auth.currentUser.displayName+messagelocation)
+
   const privateRoom = () => {
     onSnapshot(
-      query(collection(db, `${auth.currentUser.displayName+messagelocation }`), orderBy("timestamp")),
+      query(collection(db, `${Ref}`), orderBy("timestamp")),
       (snapshot) =>
         setdata(snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })))
     );
   };
-
+  
+console.log("data",data)
+console.log("messagelocation",messagelocation)
   const sendMessage = async () => {
-    const documentReference = collection(db, `${auth.currentUser.displayName+messagelocation}`);
+    const documentReference = collection(db, `${Ref}`);
     const payload = {
       messsage: input,
       name: auth.currentUser.displayName,
@@ -138,7 +146,7 @@ const BasicTable = () => {
                             align={"left"}
                             onClick={() => {
                               setmessagelocation(id);
-                              privateRoom(id);
+                              privateRoom();
                             }}
                           >
                             <Button>
