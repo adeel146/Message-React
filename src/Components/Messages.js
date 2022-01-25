@@ -28,12 +28,30 @@ const BasicTable = () => {
   const [data, setdata] = useState([]);
   const [input, setinput] = useState("");
   const [listusers, setlistusers] = useState();
-  const [messagelocation, setmessagelocation] = useState("");
+  const [messagelocation, setmessagelocation] = useState("group");
 
   const dummy = useRef();
   useEffect(() => {
     dummy.current?.scrollIntoView({ behavior: "smooth" });
-  }, [data]);
+  }, []);
+
+  useEffect(() => {
+
+    addNewUser();
+    onSnapshot(
+      query(collection(db, "group"), orderBy("timestamp")),
+      (snapshot) =>
+        setdata(snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })))
+    );
+    onSnapshot(
+      query(
+        collection(db, "users"),
+        where("id", "!=", `${auth.currentUser.uid}`)
+      ),
+      (snapshot) =>
+        setlistusers(snapshot.docs.map((doc) => ({ ...doc.data() })))
+    );
+  }, []);
 
   const addNewUser = async () => {
     const documentReference = doc(
@@ -50,22 +68,8 @@ const BasicTable = () => {
     await setDoc(documentReference, payload);
   };
 
-  useEffect(() => {
-    addNewUser();
-
-    onSnapshot(
-      query(
-        collection(db, "users"),
-        where("id", "!=", `${auth.currentUser.uid}`)
-      ),
-      (snapshot) =>
-        setlistusers(
-          snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
-        )
-    );
-  }, []);
-
   const groupRoom = () => {
+    setmessagelocation("group")
     onSnapshot(
       query(collection(db, "group"), orderBy("timestamp")),
       (snapshot) =>
@@ -73,23 +77,25 @@ const BasicTable = () => {
     );
   };
 
-  const sortAlphabet=(str)=> {
+  const sortAlphabet = (str) => {
     return [...str].sort((a, b) => a.localeCompare(b)).join("");
-  }
-const Ref=sortAlphabet(auth.currentUser.displayName+messagelocation)
+  };
+  const Ref = sortAlphabet(auth.currentUser.uid + messagelocation);
 
-  const privateRoom = () => {
+  const privateRoom = (id) => {
+    setmessagelocation(id)
     onSnapshot(
-      query(collection(db, `${Ref}`), orderBy("timestamp")),
+      query(collection(db, `${sortAlphabet(auth.currentUser.uid + id)}`), orderBy("timestamp")),
       (snapshot) =>
         setdata(snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })))
     );
   };
-  
-console.log("data",data)
-console.log("messagelocation",messagelocation)
+  console.log("data", data);
   const sendMessage = async () => {
-    const documentReference = collection(db, `${Ref}`);
+    const documentReference = collection(
+      db,
+      `${messagelocation === "group" ? messagelocation : Ref}`
+    );
     const payload = {
       messsage: input,
       name: auth.currentUser.displayName,
@@ -102,7 +108,7 @@ console.log("messagelocation",messagelocation)
 
   return (
     <>
-      <div style={{ margin: "10px 25% 0 25%" }}>
+      <div style={{ margin: "10px 20% 0 20%" }}>
         <Grid container>
           <Grid item md={4} lg={4}>
             <TableContainer sx={{ maxHeight: 550 }}>
@@ -110,7 +116,7 @@ console.log("messagelocation",messagelocation)
                 sx={{
                   backgroundColor: "cornflowerblue",
                   borderRadius: "10px",
-                  borderRight:"1px solid white"
+                  borderRight: "1px solid white",
                 }}
                 size="small"
                 aria-label="a dense table"
@@ -121,7 +127,6 @@ console.log("messagelocation",messagelocation)
                       <Button
                         variant="inherit"
                         onClick={() => {
-                          setmessagelocation("group");
                           groupRoom();
                         }}
                       >
@@ -131,50 +136,47 @@ console.log("messagelocation",messagelocation)
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  <TableCell>
-                    {listusers &&
-                      listusers.map(({ id, image, name }) => (
-                        <TableRow
-                          key={id}
-                          sx={{
-                            "&:last-child td, &:last-child th": { border: 0 },
+                  {listusers &&
+                    listusers.map(({ id, image, name }) => (
+                      <TableRow
+                        key={id}
+                        sx={{
+                          "&:last-child td, &:last-child th": { border: 0 },
+                        }}
+                      >
+                        <TableCell
+                          component="th"
+                          scope="row"
+                          align={"left"}
+                          onClick={() => {
+                            privateRoom(id);
                           }}
                         >
-                          <TableCell
-                            component="th"
-                            scope="row"
-                            align={"left"}
-                            onClick={() => {
-                              setmessagelocation(id);
-                              privateRoom();
-                            }}
-                          >
-                            <Button>
-                              <img
-                                src={image}
-                                alt="reload"
-                                style={{
-                                  borderRadius: "50%",
-                                  width: "40px",
-                                  height: "40px",
-                                  float: "left",
-                                }}
-                              />
-                              <span
-                                style={{
-                                  backgroundColor: "white",
-                                  borderRadius: "15px",
-                                  padding: "15px",
-                                  margin: "10px 5px 5px 5px",
-                                }}
-                              >
-                                {name}
-                              </span>
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                  </TableCell>
+                          <Button>
+                            <img
+                              src={image}
+                              alt="reload"
+                              style={{
+                                borderRadius: "50%",
+                                width: "40px",
+                                height: "40px",
+                                float: "left",
+                              }}
+                            />
+                            <span
+                              style={{
+                                backgroundColor: "white",
+                                borderRadius: "15px",
+                                padding: "15px",
+                                margin: "10px 5px 5px 5px",
+                              }}
+                            >
+                              {name}
+                            </span>
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
                 </TableBody>
               </Table>
             </TableContainer>
@@ -184,7 +186,7 @@ console.log("messagelocation",messagelocation)
               <Table
                 sx={{
                   Width: 650,
-                  height: "500px",
+                  height: 500,
                   backgroundColor: "cornflowerblue",
                   borderRadius: "10px",
                 }}
@@ -194,7 +196,7 @@ console.log("messagelocation",messagelocation)
                   <TableRow></TableRow>
                 </TableHead>
                 <TableBody>
-                  {data.map((row) => (
+                  { data && data.map((row) => (
                     <TableRow
                       key={row.id}
                       sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
@@ -250,6 +252,7 @@ console.log("messagelocation",messagelocation)
           ></TextField>
 
           <Button
+          type="submit"
             size="large"
             variant="contained"
             style={{ height: "55px" }}
@@ -261,7 +264,7 @@ console.log("messagelocation",messagelocation)
               }
             }}
           >
-            addDoc
+            sendMessage
           </Button>
         </div>
       </div>
