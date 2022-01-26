@@ -241,12 +241,10 @@ const BasicTable = () => {
                 </TableBody>
               </Table>
             </TableContainer>
-          </Grid>
-        </Grid>
-
-        <div style={{ textAlign: "center", marginTop: "10px" }}>
+            <div style={{ textAlign: "center" ,width:650}}>
           <TextField
             placeholder="Add ToDo"
+            style={{width:500}}
             onChange={(e) => setinput(e.target.value)}
             value={input}
           ></TextField>
@@ -255,7 +253,7 @@ const BasicTable = () => {
           type="submit"
             size="large"
             variant="contained"
-            style={{ height: "55px" }}
+            style={{ height: "55px",}}
             endIcon={<SendIcon />}
             onClick={() => {
               if (input.length > 0) {
@@ -264,9 +262,12 @@ const BasicTable = () => {
               }
             }}
           >
-            sendMessage
+            send
           </Button>
         </div>
+          </Grid>
+          
+        </Grid>
       </div>
     </>
   );
