@@ -5,7 +5,7 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import { useState, useEffect,useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { TextField, Button, Grid } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import db from "./FireBase";
@@ -68,10 +68,8 @@ const BasicTable = () => {
     await setDoc(documentReference, payload);
   };
 
-  
   const groupRoom = () => {
-    console.log("group")
-    setmessagelocation("group")
+    setmessagelocation("group");
     onSnapshot(
       query(collection(db, "group"), orderBy("timestamp")),
       (snapshot) =>
@@ -80,25 +78,30 @@ const BasicTable = () => {
   };
 
   const sortAlphabet = (str) => {
-    console.log("ref")
     return [...str].sort((a, b) => a.localeCompare(b)).join("");
   };
 
   const privateRoom = (id) => {
-    setmessagelocation(id)
+    setmessagelocation(id);
     onSnapshot(
-      query(collection(db, `${sortAlphabet(auth.currentUser.uid + id)}`), orderBy("timestamp")),
+      query(
+        collection(db, `${sortAlphabet(auth.currentUser.uid + id)}`),
+        orderBy("timestamp")
+      ),
       (snapshot) =>
         setdata(snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })))
     );
   };
 
-  console.log("data", data);
 
   const sendMessage = async () => {
     const documentReference = collection(
       db,
-      `${messagelocation === "group" ? messagelocation : sortAlphabet(auth.currentUser.uid + messagelocation)}`
+      `${
+        messagelocation === "group"
+          ? messagelocation
+          : sortAlphabet(auth.currentUser.uid + messagelocation)
+      }`
     );
     const payload = {
       messsage: input,
@@ -128,10 +131,7 @@ const BasicTable = () => {
                 <TableHead>
                   <TableRow>
                     <TableCell>
-                      <Button
-                        variant="inherit"
-                        onClick={groupRoom}
-                      >
+                      <Button variant="inherit" onClick={groupRoom}>
                         show group messages
                       </Button>
                     </TableCell>
@@ -198,77 +198,79 @@ const BasicTable = () => {
                   <TableRow></TableRow>
                 </TableHead>
                 <TableBody>
-                  { data && data.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                    >
-                      <TableCell
-                        component="th"
-                        scope="row"
-                        align={`${
-                          auth.currentUser.displayName === row.name
-                            ? "right"
-                            : "left"
-                        }`}
+                  {data &&
+                    data.map((row) => (
+                      <TableRow
+                        key={row.id}
+                        sx={{
+                          "&:last-child td, &:last-child th": { border: 0 },
+                        }}
                       >
-                        <img
-                          src={row.image}
-                          alt="reload"
-                          style={{
-                            borderRadius: "50%",
-                            width: "40px",
-                            height: "40px",
-                            float: `${
-                              auth.currentUser.displayName === row.name
-                                ? "right"
-                                : "left"
-                            }`,
-                          }}
-                        />
-                        <span
-                          style={{
-                            backgroundColor: "white",
-                            borderRadius: "15px",
-                            padding: "15px",
-                            margin: "10px 5px 5px 5px",
-                          }}
+                        <TableCell
+                          component="th"
+                          scope="row"
+                          align={`${
+                            auth.currentUser.displayName === row.name
+                              ? "right"
+                              : "left"
+                          }`}
                         >
-                          {row.messsage}
-                        </span>
-                        <span ref={dummy} />
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                          <img
+                            src={row.image}
+                            alt="reload"
+                            style={{
+                              borderRadius: "50%",
+                              width: "40px",
+                              height: "40px",
+                              float: `${
+                                auth.currentUser.displayName === row.name
+                                  ? "right"
+                                  : "left"
+                              }`,
+                            }}
+                          />
+                          <span
+                            style={{
+                              backgroundColor: "white",
+                              borderRadius: "15px",
+                              padding: "15px",
+                              margin: "10px 5px 5px 5px",
+                            }}
+                          >
+                            {row.messsage}
+                          </span>
+                          <span ref={dummy} />
+                        </TableCell>
+                      </TableRow>
+                    ))}
                 </TableBody>
               </Table>
             </TableContainer>
-            <div style={{ textAlign: "center" ,width:650}}>
-          <TextField
-            placeholder="Add ToDo"
-            style={{width:500}}
-            onChange={(e) => setinput(e.target.value)}
-            value={input}
-          ></TextField>
+            <div style={{ textAlign: "center", width: 650 }}>
+              <TextField
+                placeholder="Add ToDo"
+                style={{ width: 500 }}
+                onChange={(e) => setinput(e.target.value)}
+                value={input}
+              ></TextField>
 
-          <Button
-          type="submit"
-            size="large"
-            variant="contained"
-            style={{ height: "55px",}}
-            endIcon={<SendIcon />}
-            onClick={() => {
-              if (input.length > 0) {
-                sendMessage();
-                setinput("");
-              }
-            }}
-          >
-            send
-          </Button>
-        </div>
+              <Button
+                type="submit"
+                size="large"
+                variant="contained"
+                style={{ height: "55px" }}
+                endIcon={<SendIcon />}
+                onClick={() => {
+                  if (input.length > 0) {
+                    sendMessage();
+                    setinput("");
+                  }
+                }}
+              >
+                send
+              </Button>
+            </div>
           </Grid>
-          
         </Grid>
       </div>
     </>
