@@ -5,7 +5,7 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import { useState, useEffect } from "react";
+import { useState, useEffect,useMemo } from "react";
 import { TextField, Button, Grid } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import db from "./FireBase";
@@ -31,12 +31,12 @@ const BasicTable = () => {
   const [messagelocation, setmessagelocation] = useState("group");
 
   const dummy = useRef();
+
   useEffect(() => {
     dummy.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
   useEffect(() => {
-
     addNewUser();
     onSnapshot(
       query(collection(db, "group"), orderBy("timestamp")),
@@ -68,7 +68,9 @@ const BasicTable = () => {
     await setDoc(documentReference, payload);
   };
 
+  
   const groupRoom = () => {
+    console.log("group")
     setmessagelocation("group")
     onSnapshot(
       query(collection(db, "group"), orderBy("timestamp")),
@@ -78,9 +80,9 @@ const BasicTable = () => {
   };
 
   const sortAlphabet = (str) => {
+    console.log("ref")
     return [...str].sort((a, b) => a.localeCompare(b)).join("");
   };
-  const Ref = sortAlphabet(auth.currentUser.uid + messagelocation);
 
   const privateRoom = (id) => {
     setmessagelocation(id)
@@ -90,11 +92,13 @@ const BasicTable = () => {
         setdata(snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })))
     );
   };
+
   console.log("data", data);
+
   const sendMessage = async () => {
     const documentReference = collection(
       db,
-      `${messagelocation === "group" ? messagelocation : Ref}`
+      `${messagelocation === "group" ? messagelocation : sortAlphabet(auth.currentUser.uid + messagelocation)}`
     );
     const payload = {
       messsage: input,
@@ -126,9 +130,7 @@ const BasicTable = () => {
                     <TableCell>
                       <Button
                         variant="inherit"
-                        onClick={() => {
-                          groupRoom();
-                        }}
+                        onClick={groupRoom}
                       >
                         show group messages
                       </Button>
@@ -166,7 +168,7 @@ const BasicTable = () => {
                             <span
                               style={{
                                 backgroundColor: "white",
-                                borderRadius: "15px",
+                                // borderRadius: "15px",
                                 padding: "15px",
                                 margin: "10px 5px 5px 5px",
                               }}
