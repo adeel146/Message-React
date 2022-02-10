@@ -93,7 +93,6 @@ const BasicTable = () => {
     );
   };
 
-
   const sendMessage = async () => {
     const documentReference = collection(
       db,
@@ -131,13 +130,20 @@ const BasicTable = () => {
                 <TableHead>
                   <TableRow>
                     <TableCell>
-                      <Button variant="inherit" onClick={groupRoom}>
+                      <Button
+                        color="inherit"
+                        variant="outlined"
+                        onClick={groupRoom}
+                      >
                         show group messages
                       </Button>
                     </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
+                  <TableCell>
+                    <p style={{ color: "white" }}>List of Users</p>
+                  </TableCell>
                   {listusers &&
                     listusers.map(({ id, image, name }) => (
                       <TableRow
